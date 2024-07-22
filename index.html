@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вкладки с сообщениями</title>
+    <style>
+        .tab {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+        .tab.active {
+            background-color: #ccc;
+        }
+        #tabContents {
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="tabs">
+        <div class="tab active" data-tab="1">Вкладка 1</div>
+        <div class="tab" data-tab="2">Вкладка 2</div>
+        <div class="tab" data-tab="3">Вкладка 3</div>
+        <div class="tab" data-tab="4">Вкладка 4</div>
+        <div class="tab" data-tab="5">Вкладка 5</div>
+        <div class="tab" data-tab="6">Вкладка 6</div>
+    </div>
+    <div id="tabContents">
+        <ul id="tab1" style="display: block;">
+            <!-- Сообщения для вкладки 1 -->
+        </ul>
+        <ul id="tab2" style="display: none;">
+            <!-- Сообщения для вкладки 2 -->
+        </ul>
+        <ul id="tab3" style="display: none;">
+            <!-- Сообщения для вкладки 3 -->
+        </ul>
+        <ul id="tab4" style="display: none;">
+            <!-- Сообщения для вкладки 4 -->
+        </ul>
+        <ul id="tab5" style="display: none;">
+            <!-- Сообщения для вкладки 5 -->
+        </ul>
+        <ul id="tab6" style="display: none;">
+            <!-- Сообщения для вкладки 6 -->
+        </ul>
+    </div>
+
+    <script>
+        function showTab(tabNumber) {
+            var tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            var tabContents = document.querySelectorAll('#tabContents > ul');
+            tabContents.forEach(content => content.style.display = 'none');
+
+            document.querySelector('.tab[data-tab="' + tabNumber + '"]').classList.add('active');
+            document.getElementById('tab' + tabNumber).style.display = 'block';
+
+            // Обновляем содержимое текущей вкладки
+            updateTab(tabNumber);
+        }
+
+        function updateTab(tabNumber) {
+            // Отправляем запрос на сервер, чтобы получить сообщения для текущей вкладки
+            fetch('/get_messages/' + tabNumber)
+                .then(response => response.json())
+                .then(messages => {
+                    // Очищаем содержимое вкладки
+                    var tabContent = document.getElementById('tab' + tabNumber);
+                    tabContent.innerHTML = '';
+
+                    // Добавляем сообщения на вкладку
+                    messages.forEach(message => {
+                        var li = document.createElement('li');
+                        li.textContent = message;
+                        tabContent.appendChild(li);
+                    });
+                })
+                .catch(error => console.error(error));
+        }
+
+        // Обработчик клика на вкладках
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                var tabNumber = tab.dataset.tab;
+                showTab(tabNumber);
+            });
+        });
+
+        // Обновляем содержимое текущей вкладки каждые 10 секунд
+        setInterval(() => {
+            var activeTab = document.querySelector('.tab.active');
+            var tabNumber = activeTab.dataset.tab;
+            updateTab(tabNumber);
+        }, 10000);
+    </script>
+</body>
+</html>
